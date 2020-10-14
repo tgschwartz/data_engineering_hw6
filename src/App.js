@@ -3,71 +3,86 @@ import "./styles.css";
 
 import { useImmer } from "use-immer";
 
-const TasksApp = () => {
+const DressesApp = () => {
   const [appState, updateState] = useImmer({
     filterType: "all",
-    tasks: [
-      { id: 0, title: "uno", completed: true },
-      { id: 1, title: "dos", completed: false }
+    dresses: [
+      { id: 0, name: "uno", size: 2, returned: true },
+      { id: 1, name: "dos", size: 4, returned: false }
+    ],
+    customers: [
+      {
+        id: 8,
+        first_name: "Tova",
+        last_name: "Schwartz",
+        size: 14,
+        wedding_date: "04/03/2021"
+      }
     ]
   });
 
-  const Task = ({ id, title, completed, toggleTask }) => {
+  const Dress = ({ id, name, size, returned, toggleDress }) => {
     return (
       <li
-        onClick={toggleTask}
+        onClick={toggleDress}
         style={{
-          textDecoration: completed ? "line-through" : "none"
+          textDecoration: returned ? "line-through" : "none"
         }}
       >
-        {title}
+        {"Dress: " + name + " | size: " + size}
       </li>
     );
   };
 
-  const TaskForm = ({ taskAction }) => {
+  const DressForm = ({ dressAction }) => {
     // variable to hold a reference to the input
-    let taskInput;
+    let dressNameInput;
+    let dressSizeInput;
 
-    const handleSubmit = event => {
+    const handleSubmit = (event) => {
       event.preventDefault();
-      taskAction(taskInput.value);
-      taskInput.value = "";
+      dressAction(dressNameInput.value, dressSizeInput.value);
+      dressNameInput.value = "";
+      dressSizeInput.value = "";
     };
 
     return (
       <form onSubmit={handleSubmit}>
-        <label>
-          <input ref={r => (taskInput = r)} type="text" />
-        </label>
-        <input type="submit" value="Create Task" />
+        <label>Dress name:</label>
+        <input ref={(r) => (dressNameInput = r)} type="text" />
+        <br></br>
+        <label>Dress size:</label>
+        <input ref={(r) => (dressSizeInput = r)} type="text" />
+        <br></br>
+        <input type="submit" value="Submit" />
       </form>
     );
   };
 
-  const createTask = title => {
-    updateState(draft => {
-      draft.tasks.push({
-        id: draft.tasks.length,
-        title: title,
-        completed: false
+  const createDress = (name, size) => {
+    updateState((draft) => {
+      draft.dresses.push({
+        id: draft.dresses.length,
+        name: name,
+        size: size,
+        returned: false
       });
     });
   };
 
-  const toggleTask = id => {
-    updateState(draft => {
-      if (draft.tasks[id].completed === false) {
-        draft.tasks[id].completed = true;
-      } else if (draft.tasks[id].completed === true) {
-        draft.tasks[id].completed = false;
+  const toggleDress = (id) => {
+    updateState((draft) => {
+      if (draft.dresses[id].returned === false) {
+        draft.dresses[id].returned = true;
+      } else if (draft.dresses[id].returned === true) {
+        draft.dresses[id].returned = false;
       }
     });
   };
 
-  const TodoFilter = ({ filterType, setFilterType }) => (
+  const ReturnedFilter = ({ filterType, setFilterType }) => (
     <span>
-      {["all", "completed", "active"].map((status, i) => {
+      {["all", "returned", "rented"].map((status, i) => {
         return (
           <button
             onClick={() => setFilterType(status)}
@@ -80,18 +95,18 @@ const TasksApp = () => {
     </span>
   );
 
-  const filteredTasks = () => {
+  const filteredDresses = () => {
     if (appState.filterType === "all") {
-      return appState.tasks;
-    } else if (appState.filterType === "completed") {
-      return appState.tasks.filter(task => task.completed === true);
-    } else if (appState.filterType === "active") {
-      return appState.tasks.filter(task => task.completed === false);
+      return appState.dresses;
+    } else if (appState.filterType === "returned") {
+      return appState.dresses.filter((dress) => dress.returned === true);
+    } else if (appState.filterType === "rented") {
+      return appState.dresses.filter((dress) => dress.returned === false);
     }
   };
 
-  const setFilterType = filterType => {
-    updateState(draft => {
+  const setFilterType = (filterType) => {
+    updateState((draft) => {
       draft.filterType = filterType;
     });
   };
@@ -100,22 +115,24 @@ const TasksApp = () => {
   // to uncomment, remove the enclosing '{/*' and '*/}'
   return (
     <div>
-      {<TaskForm taskAction={createTask} />}
-      <h3> Tasks </h3>
+      <h3> Add a Dress </h3>
+      {<DressForm dressAction={createDress} />}
 
+      <h3> Dresses </h3>
       {
-        <TodoFilter
+        <ReturnedFilter
           filterType={appState.filterType}
           setFilterType={setFilterType}
         />
       }
       <ul>
-        {filteredTasks().map(task => (
-          <Task
-            key={task.id}
-            title={task.title}
-            completed={task.completed}
-            toggleTask={() => toggleTask(task.id)}
+        {filteredDresses().map((dress) => (
+          <Dress
+            key={dress.id}
+            name={dress.name}
+            size={dress.size}
+            returned={dress.returned}
+            toggleDress={() => toggleDress(dress.id)}
           />
         ))}
       </ul>
@@ -126,7 +143,7 @@ const TasksApp = () => {
 export default function App() {
   return (
     <div className="App">
-      <TasksApp />
+      <DressesApp />
     </div>
   );
 }
